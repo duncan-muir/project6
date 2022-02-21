@@ -1,5 +1,8 @@
 # Project 6
 Logistic regression and application to medical record data
+Duncan Muir
+
+![BuildStatus](https://github.com/duncan-muir/project6/workflows/project6/badge.svg?event=push)
 
 # Assignment
 

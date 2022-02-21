@@ -2,11 +2,13 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
 
 class BaseRegressor():
-    def __init__(self, num_feats, learning_rate=0.1, tol=0.001, max_iter=100, batch_size=12):
+    def __init__(self, num_feats, learning_rate=0.1, tol=0.001, max_iter=100, batch_size=12,
+                 rand: np.random.RandomState = np.random.RandomState()):
         # initializing parameters
-        self.W = np.random.randn(num_feats + 1).flatten()
+        self.W = rand.randn(num_feats + 1).flatten()
         # assigning hyperparameters
         self.lr = learning_rate
         self.tol = tol
@@ -16,6 +18,8 @@ class BaseRegressor():
         # defining list for storing loss history
         self.loss_history_train = []
         self.loss_history_val = []
+        #set random state
+        self.rand = rand
         
     def calculate_gradient(self, X, y):
         pass
@@ -34,11 +38,12 @@ class BaseRegressor():
         prev_update_size = 1
         iteration = 1
         # Gradient descent
+
         while prev_update_size > self.tol and iteration < self.max_iter:
             # Shuffling the training data for each epoch of training
             shuffle_arr = np.concatenate([X_train, np.expand_dims(y_train, 1)], axis=1)
             # In place shuffle
-            np.random.shuffle(shuffle_arr)
+            self.rand.shuffle(shuffle_arr)
             X_train = shuffle_arr[:, :-1]
             y_train = shuffle_arr[:, -1].flatten()
             num_batches = int(X_train.shape[0]/self.batch_size) + 1
@@ -59,7 +64,7 @@ class BaseRegressor():
                 # Calculating gradient of loss function with respect to each parameter
                 grad = self.calculate_gradient(X_train, y_train)
                 # Updating parameters
-                new_W = prev_W - self.lr * grad 
+                new_W = prev_W - self.lr * grad
                 self.W = new_W
                 # Saving step size
                 update_size_epoch.append(np.abs(new_W - prev_W))
@@ -68,9 +73,11 @@ class BaseRegressor():
                 self.loss_history_val.append(loss_val)
             # Defining step size as the average over the past epoch
             prev_update_size = np.mean(np.array(update_size_epoch))
+
+            #print(self.loss_history_train)
+
             # Updating iteration number
             iteration += 1
-    
     def plot_loss_history(self):
         """
         Plots the loss history after training is complete.
@@ -88,12 +95,14 @@ class BaseRegressor():
         axs[0].set_ylabel('Train Loss')
         axs[1].set_ylabel('Val Loss')
         fig.tight_layout()
+        plt.show()
         
 
 # import required modules
 class LogisticRegression(BaseRegressor):
-    def __init__(self, num_feats, learning_rate=0.1, tol=0.0001, max_iter=100, batch_size=12):
-        super().__init__(num_feats, learning_rate, tol, max_iter, batch_size)
+    def __init__(self, num_feats, learning_rate=0.1, tol=0.0001, max_iter=100, batch_size=12,
+                 rand: np.random.RandomState = np.random.RandomState()):
+        super().__init__(num_feats, learning_rate, tol, max_iter, batch_size, rand)
         
     def calculate_gradient(self, X, y) -> np.ndarray:
         """
@@ -107,8 +116,11 @@ class LogisticRegression(BaseRegressor):
         Returns: 
             gradients for given loss function (np.ndarray)
         """
-        pass
-    
+        pred_y = self.make_prediction(X)
+        error = y - pred_y
+
+        return - X.T.dot(error) / len(y)
+
     def loss_function(self, X, y) -> float:
         """
         TODO: get y_pred from input X and implement binary cross 
@@ -123,7 +135,11 @@ class LogisticRegression(BaseRegressor):
         Returns: 
             average loss 
         """
-        pass
+        y_pred = self.make_prediction(X)
+
+        total_loss = -(y.dot(np.log(y_pred)) + (1-y).dot(np.log(1 - y_pred)))
+
+        return total_loss / len(y)
     
     def make_prediction(self, X) -> np.array:
         """
@@ -137,8 +153,15 @@ class LogisticRegression(BaseRegressor):
         Returns: 
             y_pred for given X
         """
+        if X.shape[1] == self.num_feats:
+            X = np.hstack([X, np.ones((X.shape[0], 1))])
+        sig_X = self._sigmoid(X.dot(self.W))
 
-        pass
+        return sig_X
+
+    @staticmethod
+    def _sigmoid(x):
+        return 1 / (1 + np.exp(-x))
 
 
 
