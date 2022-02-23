@@ -13,7 +13,7 @@ More details on potential tests below, these are not exhaustive
 
 def test_updates():
 	"""
-
+	Test to check gradients and loss are calculated as expected, and that training losses are reasonable
 	"""
 	X_train, X_val, y_train, y_val = utils.loadDataset(
 		features=['Penicillin V Potassium 500 MG', 'Computed tomography of chest and abdomen',
@@ -27,10 +27,11 @@ def test_updates():
 	log_model = logreg.LogisticRegression(num_feats=6, max_iter=10000, tol=0.00001, learning_rate=0.01, batch_size=200,
 										  rand=np.random.RandomState(4))
 
+	# Check that your gradient is being calculated correctly
 	assert np.allclose(log_model.calculate_gradient(X_train[:1], y_train[:1]),
 						np.array([-0.01088303, -0.05233874, 0.03182683, -0, -0, 0.04925154]), .0001)
 
-	# Check that your gradient is being calculated correctly
+
 	
 	# Check that your loss function is correct and that 
 	# you have reasonable losses at the end of training
@@ -44,10 +45,11 @@ def test_updates():
 
 
 def test_predict():
-	# Check that self.W is being updated as expected
-	# and produces reasonable estimates for NSCLC classification
+	"""
+	Check that parameter updates are behaving as expected
+	"""
 
-	# Check accuracy of model after training
+
 	X_train, X_val, y_train, y_val = utils.loadDataset(
 		features=['Penicillin V Potassium 500 MG', 'Computed tomography of chest and abdomen',
 				  'Plain chest X-ray (procedure)', 'Low Density Lipoprotein Cholesterol',
@@ -74,11 +76,15 @@ def test_predict():
 
 	new_w = log_model.W
 
+	# compare with manual grad calculation
 	assert not np.array_equal(old_w, new_w)
 	assert np.allclose(old_w - grad * log_model.lr, new_w, .0001)
 
 
 def test_accuracy():
+	"""
+	Check that trained model accuracy is reasonable (>> .50)
+	"""
 	X_train, X_val, y_train, y_val = utils.loadDataset(
 		features=['Penicillin V Potassium 500 MG', 'Computed tomography of chest and abdomen',
 				  'Plain chest X-ray (procedure)', 'Low Density Lipoprotein Cholesterol',

@@ -74,7 +74,6 @@ class BaseRegressor():
             # Defining step size as the average over the past epoch
             prev_update_size = np.mean(np.array(update_size_epoch))
 
-            #print(self.loss_history_train)
 
             # Updating iteration number
             iteration += 1
@@ -106,7 +105,7 @@ class LogisticRegression(BaseRegressor):
         
     def calculate_gradient(self, X, y) -> np.ndarray:
         """
-        TODO: write function to calculate gradient of the
+        calculate gradient of the
         logistic loss function to update the weights 
 
         Params:
@@ -116,14 +115,16 @@ class LogisticRegression(BaseRegressor):
         Returns: 
             gradients for given loss function (np.ndarray)
         """
-        pred_y = self.make_prediction(X)
-        error = y - pred_y
+        # get prediction
+        y_pred = self.make_prediction(X)
+        # compute BCE loss grad
+        error = y - y_pred
 
-        return - X.T.dot(error) / len(y)
+        return - X.T.dot(error) / len(y)  # average grad
 
     def loss_function(self, X, y) -> float:
         """
-        TODO: get y_pred from input X and implement binary cross 
+        get y_pred from input X and implement binary cross
         entropy loss function. Binary cross entropy loss assumes that 
         the classification is either 1 or 0, not continuous, making
         it more suited for (binary) classification.
@@ -135,15 +136,17 @@ class LogisticRegression(BaseRegressor):
         Returns: 
             average loss 
         """
+        # get prediction
         y_pred = self.make_prediction(X)
 
+        # compute loss (dot product to simplify calculation instead of if/else)
         total_loss = -(y.dot(np.log(y_pred)) + (1-y).dot(np.log(1 - y_pred)))
 
-        return total_loss / len(y)
+        return total_loss / len(y)  # average loss
     
     def make_prediction(self, X) -> np.array:
         """
-        TODO: implement logistic function to get estimates (y_pred) for input
+        function to get estimates (y_pred) for input
         X values. The logistic function is a transformation of the linear model W.T(X)+b 
         into an "S-shaped" curve that can be used for binary classification
 
@@ -153,14 +156,21 @@ class LogisticRegression(BaseRegressor):
         Returns: 
             y_pred for given X
         """
+
+        # add bias if necessary
         if X.shape[1] == self.num_feats:
             X = np.hstack([X, np.ones((X.shape[0], 1))])
+
+        # compute logit of X * W
         sig_X = self._sigmoid(X.dot(self.W))
 
         return sig_X
 
     @staticmethod
     def _sigmoid(x):
+        """
+        Helper function for sigmoid
+        """
         return 1 / (1 + np.exp(-x))
 
 

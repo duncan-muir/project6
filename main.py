@@ -23,12 +23,11 @@ def main():
     log_model = logreg.LogisticRegression(num_feats=6, max_iter=10000, tol=0.00001, learning_rate=0.01, batch_size=200,
                                           rand=np.random.RandomState(4))
 
-    print(log_model.loss_function(X_train[:1], y_train[:1]))
 
     log_model.train_model(X_train, y_train, X_val, y_val)
-    # print(f"Val Accuracy: "
-    #       f"{accuracy_score([1 if pred >= 0.5 else 0 for pred in log_model.make_prediction(X_val)], y_val)}")
-    #
+    print(f"Val Accuracy: "
+          f"{accuracy_score([1 if pred >= 0.5 else 0 for pred in log_model.make_prediction(X_val)], y_val)}")
+
     log_model.plot_loss_history()
 
 if __name__ == "__main__":
